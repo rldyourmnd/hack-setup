@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   artifacts:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -44,7 +44,7 @@ jobs:
           for f in setup install/bootstrap.sh install/env.sh install/lib/*.sh install/modules/*/module.sh install/deploy/*.sh install/notify.sh; do sh -n "$f"; done
 
   devin-artifacts:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -79,7 +79,7 @@ jobs:
       fail-fast: false
       matrix:
         # macOS joins on main; pull requests keep the Linux path.
-        os: ${{ fromJSON(github.event_name == 'pull_request' && '["ubuntu-24.04"]' || '["ubuntu-24.04","macos-26"]') }}
+        os: ${{ fromJSON(github.event_name == 'pull_request' && '["ubuntu-26.04"]' || '["ubuntu-26.04","macos-26"]') }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
@@ -134,7 +134,7 @@ jobs:
       fail-fast: false
       matrix:
         # macOS joins on main; pull requests keep the Linux path.
-        os: ${{ fromJSON(github.event_name == 'pull_request' && '["ubuntu-24.04"]' || '["ubuntu-24.04","macos-26"]') }}
+        os: ${{ fromJSON(github.event_name == 'pull_request' && '["ubuntu-26.04"]' || '["ubuntu-26.04","macos-26"]') }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
@@ -186,7 +186,7 @@ jobs:
   # preserved, idempotent), a dirty checkout must refuse, then the systemd
   # timer itself drives a real ff-only deploy tick.
   deploy-e2e:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -256,7 +256,7 @@ jobs:
           sudo grep -q . /tmp/hack-deploy-ran
 
   workflows:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -284,7 +284,7 @@ jobs:
   gate:
     needs: [artifacts, devin-artifacts, devin-e2e, devin-e2e-windows, setup-e2e, setup-e2e-windows, deploy-e2e, workflows]
     if: ${{ !cancelled() }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     steps:
       - uses: NDDev-Technocracy-Standarts/std-0004-ci-cd-workflows/.github/actions/gate@ab62f45b2a3067e5a7425d703f7fd07f1618b72c # nddev-cicd-v0.6.14
