@@ -1,17 +1,28 @@
-name: check
+name: ci
 
 on:
-  push:
-    branches: [main, dev]
   pull_request:
-    branches: [main, dev]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  # Obsolete pull-request heads are cancelled; a running main validation always completes.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   artifacts:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.13"
       - name: Codex project artifacts
@@ -33,10 +44,13 @@ jobs:
           for f in setup install/bootstrap.sh install/env.sh install/lib/*.sh install/modules/*/module.sh install/deploy/*.sh install/notify.sh; do sh -n "$f"; done
 
   devin-artifacts:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.13"
       - name: Devin project artifacts
@@ -62,11 +76,16 @@ jobs:
 
   devin-e2e:
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        # macOS joins on main; pull requests keep the Linux path.
+        os: ${{ fromJSON(github.event_name == 'pull_request' && '["ubuntu-24.04"]' || '["ubuntu-24.04","macos-26"]') }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Full install
         run: |
           export PATH="$PWD/devin-setup/.local/bin:$HOME/.local/bin:$PATH"
@@ -82,9 +101,13 @@ jobs:
           python3 scripts/check_devin_setup.py
 
   devin-e2e-windows:
-    runs-on: windows-latest
+    if: ${{ github.event_name != 'pull_request' }}
+    runs-on: windows-2025
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Full install
         shell: pwsh
         run: powershell -NoProfile -ExecutionPolicy Bypass -File .\devin-setup\setup.ps1
@@ -108,11 +131,16 @@ jobs:
 
   setup-e2e:
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        # macOS joins on main; pull requests keep the Linux path.
+        os: ${{ fromJSON(github.event_name == 'pull_request' && '["ubuntu-24.04"]' || '["ubuntu-24.04","macos-26"]') }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Full install
         run: |
           export PATH="$PWD/.local/bin:$HOME/.local/bin:$PATH"
@@ -126,11 +154,15 @@ jobs:
           python3 scripts/check_stack.py
 
   # Windows is native (ADR 0012): prove setup.ps1 on a real Windows host.
-  # WSL2 Ubuntu remains an alternative POSIX path covered by ubuntu-latest.
+  # WSL2 Ubuntu remains an alternative POSIX path covered by the Linux runner.
   setup-e2e-windows:
-    runs-on: windows-latest
+    if: ${{ github.event_name != 'pull_request' }}
+    runs-on: windows-2025
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Full install
         shell: pwsh
         run: powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1
@@ -154,9 +186,12 @@ jobs:
   # preserved, idempotent), a dirty checkout must refuse, then the systemd
   # timer itself drives a real ff-only deploy tick.
   deploy-e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Start sshd with root key access
         run: |
           sudo apt-get update -qq
@@ -219,3 +254,43 @@ jobs:
           got=$(sudo cat /opt/hack-app/.deployed-sha 2>/dev/null || echo none)
           [ "$got" = "$want" ] || { echo "deployed-sha $got != remote $want"; sudo journalctl -u deploy-watch.service --no-pager | tail -20; exit 1; }
           sudo grep -q . /tmp/hack-deploy-ran
+
+  workflows:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: NDDev-Technocracy-Standarts/std-0004-ci-cd-workflows/.github/actions/tools@ab62f45b2a3067e5a7425d703f7fd07f1618b72c # nddev-cicd-v0.6.14
+        with:
+          capability: security
+      - name: Lint and audit workflows
+        run: |
+          actionlint
+          zizmor --offline --no-progress .github
+      - name: Scan new pull request commits, or the full history on main
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ -n "$BASE" ]; then
+            gitleaks git --no-banner --redact --log-opts="$BASE..$HEAD" .
+          else
+            gitleaks git --no-banner --redact .
+          fi
+
+  gate:
+    needs: [artifacts, devin-artifacts, devin-e2e, devin-e2e-windows, setup-e2e, setup-e2e-windows, deploy-e2e, workflows]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: NDDev-Technocracy-Standarts/std-0004-ci-cd-workflows/.github/actions/gate@ab62f45b2a3067e5a7425d703f7fd07f1618b72c # nddev-cicd-v0.6.14
+        with:
+          needs: ${{ toJSON(needs) }}
+          # Windows installs run on main and manual runs; pull requests expect them skipped.
+          expected: >-
+            {"artifacts":"success","devin-artifacts":"success","devin-e2e":"success","setup-e2e":"success",
+            "deploy-e2e":"success","workflows":"success","devin-e2e-windows":"${{ github.event_name == 'pull_request' && 'skipped' || 'success' }}","setup-e2e-windows":"${{ github.event_name == 'pull_request' && 'skipped' || 'success' }}"}
