@@ -139,3 +139,18 @@ hooks, installs the `hack-devin-workflow` plugin locally, and replaces
 codex_app thread orchestration with herdr panes (`herdr agent
 start/prompt/read/wait`). Docs and proof: `devin-setup/README.md`,
 `devin-setup/AGENTS.md`, `cd devin-setup && just gate`.
+
+## Source CI and installed readiness
+
+`just check` checks authored projections and formatting without consulting an
+installed account or toolchain. The checker scripts accept `--source`; the
+normal scripts and `just gate` retain installed-host readiness. Python syntax
+checks compile in memory and leave no bytecode behind. The Devin artifact job
+checks its generated pin copy instead of silently rewriting it.
+
+CI prepares its execution environment through the same pinned shared library.
+The immutable application/runtime pins remain authoritative for installation
+subjects. Devin account-backed plugin activation and listing are not exercised
+on CI. Native CLI installation, local artifacts, unit tests and the isolated
+local deployment fixture remain required. No CI result establishes a signed-in
+account, live model request, external host rollout or running worker session.

@@ -45,7 +45,7 @@ suggestion.
   rebase merges, never rewrite or delete shared history (hooks deny
   them; repo merge buttons are disabled).
 - By standard, push early and let **CI/CD run in the background** —
-  `.github/workflows/check.yml` verifies every push on all three OSes
+  `.github/workflows/ci.yml` verifies every push on all three OSes
   and the deploy watcher ships `dev`/`main` moves on the servers; check
   `gh run list` after pushing, fix red immediately, keep shipping
   meanwhile — do not idle waiting on green.
@@ -351,7 +351,7 @@ codex --version
 ```
 
 All four must succeed before the setup is treated as ready. `just gate`
-runs the same four. `just check` is only the two Python scripts.
+runs the same four. `just check` validates authored files and command formatting without inspecting an installed host. The scripts' `--source` mode preserves those checks; `just gate` keeps the full installed-host checks.
 `just live` (`scripts/verify_serena.py`) is the real Serena MCP proof —
 stdio handshake, activation, `find_symbol` through pinned `ty`, memory
 write/read/delete; slower and needs network, so it is not in `gate`.
