@@ -72,3 +72,8 @@ and checks the generated Devin stack copy without rewriting it. Devin's optional
 account-backed plugin installation/listing does not run on CI. The remaining
 native installation, artifact, unit and isolated deployment checks retain their
 real execution. This is source/component evidence, not account or model proof.
+
+Ordinary pull requests retain the integration branch's full native policy: both
+Codex and Devin run Linux, macOS and Windows before merge. The aggregate requires
+all platform outcomes and shared merge stops. The old moving runner-label check
+contexts need scoped metadata adoption; missing contexts are not bypassed.
