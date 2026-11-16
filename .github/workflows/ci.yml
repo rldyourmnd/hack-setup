@@ -131,8 +131,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # macOS joins on main; pull requests keep the Linux path.
-        os: ${{ fromJSON(github.event_name == 'pull_request' && '["ubuntu-26.04"]' || '["ubuntu-26.04","macos-26"]') }}
+        os: [ubuntu-26.04, macos-26]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
@@ -171,7 +170,6 @@ jobs:
           started-file: ${{ runner.temp }}/nddev-ci-started
 
   devin-e2e-windows:
-    if: ${{ github.event_name != 'pull_request' }}
     runs-on: windows-2025
     timeout-minutes: 30
     steps:
@@ -219,8 +217,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # macOS joins on main; pull requests keep the Linux path.
-        os: ${{ fromJSON(github.event_name == 'pull_request' && '["ubuntu-26.04"]' || '["ubuntu-26.04","macos-26"]') }}
+        os: [ubuntu-26.04, macos-26]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
@@ -262,7 +259,6 @@ jobs:
   # WSL2 Ubuntu remains an alternative POSIX path covered by the Linux runner.
 
   setup-e2e-windows:
-    if: ${{ github.event_name != 'pull_request' }}
     runs-on: windows-2025
     timeout-minutes: 30
     steps:
@@ -464,7 +460,7 @@ jobs:
           NEEDS: ${{ toJSON(needs) }}
           EXPECTED: >-
             {"artifacts":"success","devin-artifacts":"success","devin-e2e":"success","setup-e2e":"success",
-            "deploy-e2e":"success","workflows":"success","merge-stops":"${{ github.event_name == 'pull_request' && 'success' || 'skipped' }}","devin-e2e-windows":"${{ github.event_name == 'pull_request' && 'skipped' || 'success' }}","setup-e2e-windows":"${{ github.event_name == 'pull_request' && 'skipped' || 'success' }}"}
+            "deploy-e2e":"success","workflows":"success","merge-stops":"${{ github.event_name == 'pull_request' && 'success' || 'skipped' }}","devin-e2e-windows":"success","setup-e2e-windows":"success"}
         run: jq -e --argjson want "$EXPECTED" 'map_values(.result) == $want' <<< "$NEEDS"
 
   merge-stops:
