@@ -64,3 +64,12 @@ def test_source_stack_refuses_a_writing_mode():
     with pytest.raises(SystemExit):
         checker.main(["--source", "--write"])
     assert checker.STANDARD_PATH.read_bytes() == original
+
+
+def test_devin_hook_syntax_validation_does_not_use_a_bytecode_writer(monkeypatch):
+    import py_compile
+
+    checker = load_checker("devin_source_bytecode_guard", "devin-setup/scripts/check_devin_setup.py")
+    monkeypatch.setattr(py_compile, "compile", refuse_host_probe)
+    checker.check_hooks()
+    assert checker.ERRORS == []

@@ -746,7 +746,12 @@ def check_generated_standard() -> None:
     scripts_dir = Path(__file__).resolve().parent
     if str(scripts_dir) not in sys.path:
         sys.path.insert(0, str(scripts_dir))
-    import check_stack
+    previous_bytecode = sys.dont_write_bytecode
+    sys.dont_write_bytecode = True
+    try:
+        import check_stack
+    finally:
+        sys.dont_write_bytecode = previous_bytecode
 
     stack = check_stack.load_json(check_stack.STACK_PIN_PATH)
     codex = check_stack.load_json(check_stack.CODEX_PIN_PATH)

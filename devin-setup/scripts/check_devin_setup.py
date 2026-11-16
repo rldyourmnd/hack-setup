@@ -10,7 +10,6 @@ have not drifted. Host/installation checks live in repair_devin_setup.py.
 from __future__ import annotations
 
 import os
-import py_compile
 import re
 import sys
 from pathlib import Path
@@ -215,8 +214,8 @@ def check_hooks() -> None:
         fail(".devin/hooks/devin_mode.py missing")
         return
     try:
-        py_compile.compile(str(script), doraise=True)
-    except py_compile.PyCompileError as exc:
+        compile(script.read_bytes(), str(script), "exec")
+    except SyntaxError as exc:
         fail(f"devin_mode.py does not compile: {exc}")
     body = read_text(script)
     for anchor in ("DEVIN_PROJECT_DIR", "hookSpecificOutput",
