@@ -384,7 +384,7 @@ def check_devin_mode_smoke() -> None:
             fail(f"devin_mode.py {event} exited {proc.returncode}: {proc.stderr.strip()[:120]}")
 
 
-def main() -> int:
+def main(*, source_only: bool = False) -> int:
     checks = [
         check_devin_pin,
         check_stack_pin_sync,
@@ -397,8 +397,9 @@ def main() -> int:
         check_bootstrap,
         check_agents_standards,
         check_ps1_ascii,
-        check_devin_mode_smoke,
     ]
+    if not source_only:
+        checks.append(check_devin_mode_smoke)
     for check in checks:
         try:
             check()
@@ -414,4 +415,8 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Validate authored Devin projections and hook behavior")
+    parser.add_argument("--source", action="store_true", help="check authored files without executing hook fixtures")
+    sys.exit(main(source_only=parser.parse_args().source))

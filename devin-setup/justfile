@@ -7,11 +7,11 @@ default:
 # Install numbered modules (args pass through: just setup --member ivan)
 [unix]
 setup *args:
-    ./setup {{args}}
+    ./setup {{ args }}
 
 [windows]
 setup *args:
-    powershell -NoProfile -ExecutionPolicy Bypass -File ./setup.ps1 {{args}}
+    powershell -NoProfile -ExecutionPolicy Bypass -File ./setup.ps1 {{ args }}
 
 # Planned work, no downloads
 [unix]
@@ -34,11 +34,13 @@ status:
 # Proof: pin == config == generated stack-pin copy
 [unix]
 check:
-    python3 scripts/check_devin_setup.py
+    just --fmt --check
+    python3 scripts/check_devin_setup.py --source
 
 [windows]
 check:
-    python scripts/check_devin_setup.py
+    just --fmt --check
+    python scripts/check_devin_setup.py --source
 
 # Repair safe drift (managed user config, .agent dirs), then re-check
 [unix]

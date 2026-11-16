@@ -831,13 +831,10 @@ def check_bootstrap() -> None:
     if not justfile.is_file():
         raise CheckError("missing justfile; just is the project command runner")
     just_text = read_text(justfile)
-    for recipe in ("gate:", "check:", "test:"):
-        if recipe not in just_text:
-            raise CheckError(f"justfile must define recipe {recipe.rstrip(':')}")
-    # `setup` may declare args (setup *args:) — match the recipe name at
-    # line start rather than the literal "setup:".
-    if not re.search(r"^setup[*\s:]", just_text, re.MULTILINE):
-        raise CheckError("justfile must define recipe setup")
+    # Native Just owns syntax; require each named operation, including parameterized recipes.
+    for recipe in ("gate", "check", "test", "setup"):
+        if not re.search(rf"^{recipe}(?:[ \t]+[^:\n]+)?:", just_text, re.MULTILINE):
+            raise CheckError(f"justfile must define recipe {recipe}")
     for name in ("Makefile", "makefile", "GNUmakefile"):
         if (ROOT / name).exists():
             raise CheckError(f"{name} must not exist; use justfile")
@@ -893,7 +890,7 @@ def check_agents_md() -> None:
         raise CheckError("docs/agent-standards/ is stale; frames live in the standards plugin")
 
 
-def check_config() -> None:
+def check_config(*, source_only: bool = False) -> None:
     pin = load_json(STACK_PIN_PATH)
     session = {}
     if isinstance(pin, dict):
@@ -955,7 +952,7 @@ def check_config() -> None:
             "ignores project-local profiles. The sol profile is installed "
             "into the user config by install/modules/20-codex-cli"
         )
-    installed = codex_bin() is not None
+    installed = not source_only and codex_bin() is not None
     user_cfg_path = codex_home() / "config.toml"
     sol_path = codex_home() / "sol.config.toml"
     if installed:
@@ -1117,8 +1114,8 @@ def check_marketplace_entry(entry: object, expected_name: str, dest: str) -> Non
         raise CheckError("marketplace entry needs category")
 
 
-def check_plugin_cache_sync() -> None:
-    if codex_bin() is None:
+def check_plugin_cache_sync(*, source_only: bool = False) -> None:
+    if source_only or codex_bin() is None:
         return
     cache_root = codex_home() / "plugins" / "cache" / "saint-tibo"
     for name in marketplace_names():
@@ -1349,11 +1346,9 @@ def check_hooks() -> None:
 
 
 def py_compile(script_path: str) -> None:
-    import py_compile as _py_compile
-
     try:
-        _py_compile.compile(script_path, doraise=True)
-    except _py_compile.PyCompileError as exc:
+        compile(Path(script_path).read_bytes(), script_path, "exec")
+    except SyntaxError as exc:
         raise CheckError(f"{script_path} must compile: {exc}") from exc
 
 
@@ -1426,16 +1421,16 @@ def check_serena_project() -> None:
         raise CheckError("serena ls_workspace_folders must contain `.`")
 
 
-def main() -> int:
+def main(*, source_only: bool = False) -> int:
     checks = (
         check_pin,
         check_stack_pin,
         check_bootstrap,
         check_agents_md,
-        check_config,
+        lambda: check_config(source_only=source_only),
         check_custom_agents,
         check_plugin_and_marketplace,
-        check_plugin_cache_sync,
+        lambda: check_plugin_cache_sync(source_only=source_only),
         check_skills,
         check_nested_templates,
         check_hooks,
@@ -1460,4 +1455,8 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Validate authored and installed Codex surfaces")
+    parser.add_argument("--source", action="store_true", help="check authored files without inspecting a host installation")
+    sys.exit(main(source_only=parser.parse_args().source))

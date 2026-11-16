@@ -70,7 +70,15 @@ function Run-Checkers {
 }
 
 switch ($args[0]) {
-    'install' { Install-Plugins (Find-Devin); Run-Repair; Run-Checkers }
+    'install' {
+        if ($env:CI -eq 'true') {
+            Log 'CI: account-backed plugin activation is not exercised'
+        } else {
+            Install-Plugins (Find-Devin)
+        }
+        Run-Repair
+        Run-Checkers
+    }
     'status' { Run-Checkers }
     'dry-run' { Log 'would install plugins via devin plugins install --local and run check_devin_setup.py' }
     default { if (-not $args[0]) { Run-Checkers } else { Die "unknown action: $($args[0])" } }
