@@ -31,7 +31,11 @@ for p in json.load(open(sys.argv[1]))["plugins"]:
 
 run_verify() {
   require_cmd python3
-  install_plugins
+  if [ "${CI:-}" = true ]; then
+    log "CI: account-backed plugin activation is not exercised"
+  else
+    install_plugins
+  fi
   # Single writer convergence: full repair AFTER runtimes land; module
   # 20 may have skipped user-config on a cold host without python3.
   python3 "$HACK_REPO_ROOT/scripts/repair_devin_setup.py"

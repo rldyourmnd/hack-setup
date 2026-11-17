@@ -9,7 +9,7 @@ versions. This catalogue is how to move inside that universe.
 
 Owner of this setup stream: Danil. Product trees are not created here.
 
-Invoke plugin skills as `$hack-agent-standards:<name>`. Codex 0.155.1
+Invoke plugin skills as `$hack-agent-standards:<name>`. Codex 0.157.1
 does not match a namespaced plugin skill on a bare `$name`. The repo
 alias `$apply-stack-rule` stays unqualified.
 

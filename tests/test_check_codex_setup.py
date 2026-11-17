@@ -15,7 +15,7 @@ def test_check_codex_setup_passes() -> None:
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    assert "PASS [artifact] Codex 0.155.1 project artifacts" in result.stdout
+    assert "PASS [artifact] Codex 0.157.1 project artifacts" in result.stdout
 
 
 def test_setup_dry_run_passes() -> None:

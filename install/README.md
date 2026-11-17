@@ -3,7 +3,7 @@
 One command after clone:
 
 ```sh
-git clone git@github.com:NDDev-OpenNetwork/hack-setup.git
+git clone git@github.com:NDDev-Archive/hack-setup.git
 cd hack-setup
 ./setup
 . install/env.sh
@@ -24,7 +24,7 @@ install/
   lib/                        # POSIX helpers (.sh) + Windows twins (.ps1)
   modules/
     10-prereqs/               # tar, git, gh; python3 3.11+ on POSIX
-    20-codex-cli/             # pinned rust-v0.155.1 package/installer + sha256
+    20-codex-cli/             # pinned rust-v0.157.1 package/installer + sha256
     30-runtimes/              # Node LTS, bun, uv, CPython 3.14
     40-project-verify/        # artifact gate + pinned versions
 ```
@@ -46,13 +46,13 @@ pin has no package for the platform, it falls back to the hashed official
 `install.sh` with:
 
 ```sh
-CODEX_RELEASE=0.155.1
+CODEX_RELEASE=0.157.1
 CODEX_NON_INTERACTIVE=1
 CODEX_INSTALLER_USE_RELEASES_OPENAI_COM=false
 CODEX_INSTALL_DIR=$HOME/.local/bin
 ```
 
-The binary is installed to `~/.local/bin/codex` (not a clone-absolute PATH) and symlinked to `$REPO/.local/bin/codex`. The module also writes the managed `~/.codex/sol.config.toml` profile overlay and strips a legacy `[profiles.sol]` table from the user config (Codex 0.155.1 ignores project-local `profiles`; since 0.134 `--profile` reads `<name>.config.toml`). Supported hosts: macOS, Ubuntu/Linux, and Windows x86_64 natively — `.\setup.ps1` runs the pinned official `install.ps1`, which manages `%LOCALAPPDATA%\Programs\OpenAI\Codex\bin` and the persistent user PATH (ADR 0012). WSL2 works as a POSIX path; Windows arm64 is fail-closed.
+The binary is installed to `~/.local/bin/codex` (not a clone-absolute PATH) and symlinked to `$REPO/.local/bin/codex`. The module also writes the managed `~/.codex/sol.config.toml` profile overlay and strips a legacy `[profiles.sol]` table from the user config (Codex 0.157.1 ignores project-local `profiles`; since 0.134 `--profile` reads `<name>.config.toml`). Supported hosts: macOS, Ubuntu/Linux, and Windows x86_64 natively — `.\setup.ps1` runs the pinned official `install.ps1`, which manages `%LOCALAPPDATA%\Programs\OpenAI\Codex\bin` and the persistent user PATH (ADR 0012). WSL2 works as a POSIX path; Windows arm64 is fail-closed.
 
 ## Commands
 

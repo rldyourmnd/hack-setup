@@ -5,7 +5,7 @@ description: Load the matching pinned technology or format frame. Use when chang
 
 # Apply a stack rule
 
-This repo has no Cursor-style glob rules. Codex 0.155.1 injects only the
+This repo has no Cursor-style glob rules. Codex 0.157.1 injects only the
 cwd `AGENTS.md` chain (32 KiB). Frames live in
 `plugins/hack-agent-standards/standards/` and are loaded on demand.
 

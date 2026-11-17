@@ -12,7 +12,7 @@ python3 scripts/check_stack.py
 codex --version
 ```
 
-`codex --version` must be `codex-cli 0.155.1`. After clone, `./setup` is
+`codex --version` must be `codex-cli 0.157.1`. After clone, `./setup` is
 the installer; `. install/env.sh` puts the pinned binary first.
 
 `just gate` is the same four commands. `just check` is

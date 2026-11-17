@@ -4,7 +4,7 @@ Copy a file from this directory into a product tree **in the same
 change that creates that tree**. Do not create empty `web/`, `api/`,
 `mobile/`, `desktop/`, `telegram/`, or `infra/` only to hold a template.
 
-Codex 0.155.1 walks project root → cwd and loads at most one of
+Codex 0.157.1 walks project root → cwd and loads at most one of
 `AGENTS.override.md` / `AGENTS.md` per directory (32 KiB combined).
 Root `AGENTS.md` stays the router. These files are directory-local.
 

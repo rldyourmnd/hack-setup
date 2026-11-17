@@ -12,7 +12,7 @@ These are user-visible threads, not subagents: `agents.enabled` stays
 false. If the namespace is absent from your tools, stop and tell the
 user to open the orchestrator chat in Codex App.
 
-## Pinned tool surface (0.155.1)
+## Pinned tool surface (0.157.1)
 
 `list_threads`, `list_archived_threads`, `read_thread`,
 `wait_threads` (up to 8 targets, `timeoutMs` ≤ 120000, `0` = instant

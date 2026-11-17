@@ -1,6 +1,6 @@
 ---
 name: repo-orientation
-description: Map the Saint Tibo Codex 0.155.1 setup. Use when starting work, asking where files live, which CLI pin to use, or how skills, plugins, and config are laid out.
+description: Map the Saint Tibo Codex 0.157.1 setup. Use when starting work, asking where files live, which CLI pin to use, or how skills, plugins, and config are laid out.
 ---
 
 Read `AGENTS.md` Mechanism, `build/codex-pin.json`, `build/stack-pin.json`
@@ -10,7 +10,7 @@ is proof.
 
 Report:
 
-1. CLI pin: `0.155.1` / `rust-v0.155.1`. Reject alphas and `Codex.app`.
+1. CLI pin: `0.157.1` / `rust-v0.157.1`. Reject alphas and `Codex.app`.
 2. Bootstrap: `./setup` → `install/modules/<nn>-*`. Do not create a root file named `install`.
 3. Repo skills: `.agents/skills/`. Team plugin skill is `saint-tibo`.
    Standards plugin skills: `build/stack-pin.json`

@@ -481,7 +481,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--list", action="store_true", help="print the generated standard")
     parser.add_argument("--write", action="store_true", help="write build/stack-standard.md")
     parser.add_argument("--strict", action="store_true", help="fail on declared MISSING/DRIFT")
+    parser.add_argument("--source", action="store_true", help="check the pin and generated standard without host probes")
     args = parser.parse_args(argv)
+    if args.source and (args.write or args.list or args.strict):
+        parser.error("--source cannot be combined with a write, listing or host mode")
     prepend_pin_path()
     stack = load_json(STACK_PIN_PATH)
     codex = load_json(CODEX_PIN_PATH)
@@ -494,6 +497,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.list:
         return cmd_list(stack, probes)
     check_standard_fresh(stack, probes)
+    if args.source:
+        print("PASS [artifact] frozen stack and generated standard")
+        return 0
     return cmd_doctor(probes, strict=args.strict)
 
 

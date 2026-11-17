@@ -298,7 +298,7 @@ def prompt(payload: dict) -> None:
 
 
 def _tool_command(payload: dict) -> str:
-    """Exec surface arg shapes in 0.155.1 (be2951ea): exec_command sends
+    """Exec surface arg shapes in 0.155.1 (be2951ea), re-verified at 0.157.1 (ac0e23e5): exec_command sends
     `cmd` (string), write_stdin sends `chars` (string), legacy/permission
     payloads send `command` (string or argv list)."""
     tool_input = payload.get("tool_input")

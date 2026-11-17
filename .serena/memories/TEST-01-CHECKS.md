@@ -1,10 +1,3 @@
-<!-- Memory Metadata
-Last updated: 2026-09-21
-Last commit: 63ddace docs(serena): record deploy-e2e verification and full issue closure
-Scope: scripts/check_codex_setup.py, scripts/check_stack.py, tests/, devin-setup/scripts/ + tests/, justfile, .github/workflows/check.yml, AGENTS.md, build/stack-pin.json registered.standards_plugin_skills
-Area: TEST
--->
-
 # TEST-01-CHECKS
 
 ## Purpose
@@ -32,7 +25,7 @@ Prove Codex artifacts, the installer catalog, and required host versions.
 ## Entry Points
 
 - `just gate`: `./setup --status`, `check_codex_setup.py`, `check_stack.py`, `codex --version`.
-- `just check`: the two Python scripts. This is `stack-pin.control.proof`. It requires pin `control` paths, config == pin session/models/features, and AGENTS Mechanism.
+- `just check`: source-only Codex/stack validation and native Just formatting. This is `stack-pin.control.proof`. It requires pin `control` paths, config == pin session/models/features, and AGENTS Mechanism.
 - `just test`: `pytest -q` (use `pytest` / `~/.local/bin/pytest`, not `python3 -m pytest` on uv CPython).
 - `just live`: `scripts/verify_serena.py` — REAL MCP proof, network + uvx required, not part of `gate`.
 - `ruff check scripts tests`
@@ -50,7 +43,7 @@ The artifact validator requires catalog ids `prereqs`, `member`, `codex-cli`, `r
 
 Stack-pin schema 2: `control.rules` = `plugins/hack-agent-standards/standards/INDEX.md`. `registered.standards_plugin.id` = `hack-agent-standards@saint-tibo`. typescript `7.0.2` with no `compat_package`, `api_client.workspace` = `not-web`, `quality.just` = `1.58.0`. `do_not_use` includes Next.js, pnpm, asyncpg, TS6-in-web, `@hey-api/openapi-ts@next`, `bun add shadcn`, unconstrained RapidOCR/opencv-python, httpx 1.x, GNU make. Required conflicts include `hey-api-ts7-runtime` and `docling-opencv-cv2`.
 
-Required probes must be OK: codex, node, bun, python, uv, just (just is installed by module 30 from pinned per-platform release assets, so requiring it is fair). Declared tools (rustc, go, docker, compose, psql, redis-server, ruff, pytest, ty) may DRIFT or be MISSING without failing the default doctor. CI (`.github/workflows/check.yml`, free OSS runners only) runs 9 jobs: `artifacts` + `devin-artifacts` (checkers, pinned pytest via `uvx --from pytest==<quality.pytest.version>`, `sh -n` over every module/deploy/notify shell file in a loop — a bare `sh -n a b` checks only `a`), `setup-e2e` + `devin-e2e` matrixes on ubuntu/macos, `setup-e2e-windows` + `devin-e2e-windows` (native install + pinned pytest on real Windows), and `deploy-e2e` (self-SSH provision on ubuntu, systemd timer drives a real deploy tick — issue #7 live proof). Devin plugin ops are auth-gated: unauthenticated CI WARNs and continues.
+Required probes must be OK: codex, node, bun, python, uv, just (just is installed by module 30 from pinned per-platform release assets, so requiring it is fair). Declared tools (rustc, go, docker, compose, psql, redis-server, ruff, pytest, ty) may DRIFT or be MISSING without failing the default doctor. CI (`.github/workflows/ci.yml`, free OSS runners only) retains the native roles and shared merge stops: `artifacts` + `devin-artifacts` (checkers, pinned pytest via `uvx --from pytest==<quality.pytest.version>`, `sh -n` over every module/deploy/notify shell file in a loop — a bare `sh -n a b` checks only `a`), `setup-e2e` + `devin-e2e` matrixes on ubuntu/macos, `setup-e2e-windows` + `devin-e2e-windows` (native install + pinned pytest on real Windows), and `deploy-e2e` (self-SSH provision on ubuntu, systemd timer drives a real deploy tick — issue #7 live proof). CI does not call Devin account-backed plugin installation or listing; account activation is unperformed.
 
 ## Invariants
 
@@ -65,3 +58,22 @@ Required probes must be OK: codex, node, bun, python, uv, just (just is installe
 ## Known Gaps
 
 - Live `test_check_stack_doctor_passes` is host-state, not hermetic.
+
+## Source and account boundaries
+
+The source recipe selects `--source` on the Codex and stack checkers, which keeps
+all authored pin/projection/generated consistency checks and avoids installed
+configuration and version probes. Syntax checking leaves no Python bytecode.
+The Devin checker has the same source boundary and reserves hook smoke fixtures
+for normal/native execution. The native readiness gate retains its full checks.
+
+The current CI uses shared preparation/completion at the existing library pin
+and checks the generated Devin stack copy without rewriting it. Devin's optional
+account-backed plugin installation/listing does not run on CI. The remaining
+native installation, artifact, unit and isolated deployment checks retain their
+real execution. This is source/component evidence, not account or model proof.
+
+Ordinary pull requests retain the integration branch's full native policy: both
+Codex and Devin run Linux, macOS and Windows before merge. The aggregate requires
+all platform outcomes and shared merge stops. The old moving runner-label check
+contexts need scoped metadata adoption; missing contexts are not bypassed.

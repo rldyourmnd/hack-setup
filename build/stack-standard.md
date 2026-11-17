@@ -149,7 +149,7 @@ Refresh with `python3 scripts/check_stack.py --write`.
 
 | Class | Id | Bin | Pin path | Want |
 | --- | --- | --- | --- | --- |
-| required | `codex` | `codex` | `codex_cli` | `0.155.1` |
+| required | `codex` | `codex` | `codex_cli` | `0.157.1` |
 | required | `node` | `node` | `runtimes.node.version` | `24.21.0` |
 | required | `bun` | `bun` | `runtimes.bun.version` | `1.4.2` |
 | required | `python` | `python3` | `runtimes.python.version` | `3.14.7` |

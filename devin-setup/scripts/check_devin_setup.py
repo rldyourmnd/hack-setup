@@ -10,7 +10,6 @@ have not drifted. Host/installation checks live in repair_devin_setup.py.
 from __future__ import annotations
 
 import os
-import py_compile
 import re
 import sys
 from pathlib import Path
@@ -215,8 +214,8 @@ def check_hooks() -> None:
         fail(".devin/hooks/devin_mode.py missing")
         return
     try:
-        py_compile.compile(str(script), doraise=True)
-    except py_compile.PyCompileError as exc:
+        compile(script.read_bytes(), str(script), "exec")
+    except SyntaxError as exc:
         fail(f"devin_mode.py does not compile: {exc}")
     body = read_text(script)
     for anchor in ("DEVIN_PROJECT_DIR", "hookSpecificOutput",
@@ -384,7 +383,7 @@ def check_devin_mode_smoke() -> None:
             fail(f"devin_mode.py {event} exited {proc.returncode}: {proc.stderr.strip()[:120]}")
 
 
-def main() -> int:
+def main(*, source_only: bool = False) -> int:
     checks = [
         check_devin_pin,
         check_stack_pin_sync,
@@ -397,8 +396,9 @@ def main() -> int:
         check_bootstrap,
         check_agents_standards,
         check_ps1_ascii,
-        check_devin_mode_smoke,
     ]
+    if not source_only:
+        checks.append(check_devin_mode_smoke)
     for check in checks:
         try:
             check()
@@ -414,4 +414,8 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Validate authored Devin projections and hook behavior")
+    parser.add_argument("--source", action="store_true", help="check authored files without executing hook fixtures")
+    sys.exit(main(source_only=parser.parse_args().source))

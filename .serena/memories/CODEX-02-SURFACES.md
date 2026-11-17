@@ -9,7 +9,7 @@ Area: CODEX
 
 ## Purpose
 
-Map native Codex 0.155.1 project surfaces in this repo.
+Map native Codex 0.157.1 project surfaces in this repo.
 
 ## Source Of Truth
 
@@ -22,11 +22,11 @@ Map native Codex 0.155.1 project surfaces in this repo.
 - Standards plugin: `plugins/hack-agent-standards/plugin.json` portable Agent Plugins 1.0.0. Skills are DirectChildren `skills/<name>/SKILL.md` only. Pin `registered.standards_plugin_skills` is the skill-set SoT.
 - Workflow plugin: `plugins/hack-agent-workflow/plugin.json` portable 1.0.0. Seven skills `session-boot`, `github-flow`, `agent-handoff`, `delegate-worker`, `hack-mode`, `ship-verify`, `debt-ledger`; pin `registered.workflow_plugin_skills` is their SoT. Format: serena-first open, github-first loop, agent-first close. ADR 0009 + orchestration ADR 0014.
 - LSP plugin: `plugins/hack-agent-lsp/plugin.json` portable 1.0.0. Skills `lsp-map`, `lsp-setup`; pin `registered.lsp_plugin_skills` + `lsp.*` matrix is the SoT. ADR 0011.
-- Config: `.codex/config.toml` is a projection of pin `registered.session` + `models` + `registered.features` (`gpt-6-astra` + `xhigh`, window `872000` / compact `700000`, `agents.enabled=false`). 0.155.1 ignores project-local `profiles` and rejects a legacy `[profiles.sol]` table; module 20 writes `~/.codex/sol.config.toml` (overlay file mechanism) and the checker verifies it.
+- Config: `.codex/config.toml` is a projection of pin `registered.session` + `models` + `registered.features` (`gpt-6-astra` + `xhigh`, window `872000` / compact `700000`, `agents.enabled=false`). 0.157.1 ignores project-local `profiles` and rejects a legacy `[profiles.sol]` table; module 20 writes `~/.codex/sol.config.toml` (overlay file mechanism) and the checker verifies it.
 
 ## Current Behavior
 
-Repo skills load without plugin install. Five plugins are enabled after trust: `saint-tibo@saint-tibo`, `hack-agent-standards@saint-tibo`, `hack-agent-workflow@saint-tibo`, `hack-agent-lsp@saint-tibo`, `hack-agent-mcp@saint-tibo`. INDEX links every catalogue file as `ready`. Root `AGENTS.md` has a Motion kernel and names every standards, workflow, and lsp plugin skill. Codex 0.155.1 matches plugin skills only as `$hack-agent-standards:<name>` / `$hack-agent-workflow:<name>`. Bare `$apply-agent-standard` does not select the plugin skill. Repo alias `$apply-stack-rule` stays unqualified. `./setup` module 40 registers the marketplace and installs all five plugins before the checkers run.
+Repo skills load without plugin install. Five plugins are enabled after trust: `saint-tibo@saint-tibo`, `hack-agent-standards@saint-tibo`, `hack-agent-workflow@saint-tibo`, `hack-agent-lsp@saint-tibo`, `hack-agent-mcp@saint-tibo`. INDEX links every catalogue file as `ready`. Root `AGENTS.md` has a Motion kernel and names every standards, workflow, and lsp plugin skill. Codex 0.157.1 matches plugin skills only as `$hack-agent-standards:<name>` / `$hack-agent-workflow:<name>`. Bare `$apply-agent-standard` does not select the plugin skill. Repo alias `$apply-stack-rule` stays unqualified. `./setup` module 40 registers the marketplace and installs all five plugins before the checkers run.
 
 ## Contracts And Data
 
@@ -35,10 +35,10 @@ Repo skills load without plugin install. Five plugins are enabled after trust: `
 - Marketplace `source.path` is repo-root relative and starts with `./`.
 - Session law is `build/stack-pin.json` `registered.session` and ADR 0006: `approval_policy = "never"`, `sandbox_mode = "danger-full-access"`, `allow_login_shell = true`, `web_search = "live"`. Do not set `default_permissions` or `[sandbox_workspace_write]`.
 - `approval_policy = "untrusted"` is retired. `web_search` is top-level, not `features.web_search*`. Do not enable `features.network_proxy`.
-- Models: primary `gpt-6-astra`, secondary `gpt-6-sol` (since 2026-09-23; `gpt-5.6-sol` is now rejected), both `xhigh`. In a pinned project sol is `/review` (review_model) or `codex -m gpt-6-sol` — project `model` outranks profile overlays. `--profile sol` works in unpinned dirs via managed `~/.codex/sol.config.toml`. Context `872000` / compact `700000`. Usable `/status` `828400`. Tibo 1M/900k is documented but clamped on 0.155.1.
+- Models: primary `gpt-6-astra`, secondary `gpt-6-sol` (since 2026-09-23; `gpt-5.6-sol` is now rejected), both `xhigh`. In a pinned project sol is `/review` (review_model) or `codex -m gpt-6-sol` — project `model` outranks profile overlays. `--profile sol` works in unpinned dirs via managed `~/.codex/sol.config.toml`. Context `872000` / compact `700000`. Usable `/status` `828400`. Tibo 1M/900k is documented but clamped on 0.157.1.
 - `agents.enabled = false`. `features.multi_agent` and `features.multi_agent_v2` are false. Do not spawn Codex subagents.
 - Do not add `.codex/agents/*.toml`.
-- Do not add project `.codex/rules/*.rules`. Execpolicy `~/.codex/rules` still loads under YOLO. `--yolo` does not imply `--ignore-rules`. The ignore flag is `codex exec --ignore-rules` only and is not a `config.toml` key. TUI 0.155.1 has no `--ignore-rules`.
+- Do not add project `.codex/rules/*.rules`. Execpolicy `~/.codex/rules` still loads under YOLO. `--yolo` does not imply `--ignore-rules`. The ignore flag is `codex exec --ignore-rules` only and is not a `config.toml` key. TUI 0.157.1 has no `--ignore-rules`.
 - `$CODEX_HOME/skills` is a deprecated user skill location.
 - Do not add `plugins/hack-agent-standards/standards/*` to `project_doc_fallback_filenames`.
 - `docs/rules/` and `docs/agent-standards/` are stale and must stay deleted.

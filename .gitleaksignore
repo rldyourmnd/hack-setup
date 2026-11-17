@@ -1,0 +1,6 @@
+# Official Telegram Ed25519 verification PUBLIC keys, not credentials. See https://core.telegram.org/bots/webapps#validating-data-for-third-party-use.
+# Fingerprints suppress only these reviewed historical findings; future findings remain enabled.
+7474f8e1c1f61b3bb910c1dc6a63a7517b86514a:build/stack-pin.json:generic-api-key:430
+7474f8e1c1f61b3bb910c1dc6a63a7517b86514a:build/stack-pin.json:generic-api-key:431
+fff17cd387b668042ee1e4a54aa741ed5a44a4af:devin-setup/build/stack-pin.json:generic-api-key:782
+fff17cd387b668042ee1e4a54aa741ed5a44a4af:devin-setup/build/stack-pin.json:generic-api-key:783

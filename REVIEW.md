@@ -1,6 +1,6 @@
 # Review rules
 
-- Confirm `build/codex-pin.json` still says `0.155.1` and `codex --version` matches.
+- Confirm `build/codex-pin.json` still says `0.157.1` and `codex --version` matches.
 - Confirm `build/stack-pin.json` `control` still names pin → `.codex/config.toml` → `just check`.
 - Confirm app versions come from `build/stack-pin.json` schema 2, not ad-hoc latest.
 - Confirm `python3 scripts/check_stack.py` reports required host tools OK.

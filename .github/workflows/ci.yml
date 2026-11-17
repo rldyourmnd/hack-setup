@@ -1,0 +1,470 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main, dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  # Obsolete pull-request heads are cancelled; a running main validation always completes.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  artifacts:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Record execution start
+        shell: bash
+        run: date +%s > "$RUNNER_TEMP/nddev-ci-started"
+      - name: Outside telemetry off
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/telemetry@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+      - name: Select the artifact source
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/artifact-registry@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+      - name: Prepare the existing bootstrap interpreter
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-sdk@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          python-version: '3.13.18'
+      - name: Restore dependency caches
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-cache@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          managed: 'false'
+      - name: Resolve the existing test tools
+        id: pin
+        run: |
+          python3 - <<'PYTOOLS'
+          import json, os, re
+          from pathlib import Path
+          pin = json.loads(Path('build/stack-pin.json').read_text())
+          selected = {'uv': pin['runtimes']['uv']['version'], 'just': pin['quality']['just']['version']}
+          if not all(re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', version) for version in selected.values()):
+              raise SystemExit('Expected exact existing test-tool versions')
+          with Path(os.environ['GITHUB_OUTPUT']).open('a') as output:
+              output.write(''.join(name + '=' + version + '\n' for name, version in selected.items()))
+          PYTOOLS
+      - name: Prepare the selected test tools
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-sdk@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          uv-version: ${{ steps.pin.outputs.uv }}
+          tools: just@${{ steps.pin.outputs.just }}
+      - name: Codex project artifacts
+        run: just check
+      - name: Unit tests
+        run: just test
+      - name: Shell syntax
+        run: |
+          for f in setup install/bootstrap.sh install/env.sh install/lib/*.sh install/modules/*/module.sh install/deploy/*.sh install/notify.sh; do sh -n "$f"; done
+      - name: Record execution outcome
+        if: always()
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/job-record@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          task: artifacts
+          status: ${{ job.status }}
+          started-file: ${{ runner.temp }}/nddev-ci-started
+
+  devin-artifacts:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Record execution start
+        shell: bash
+        run: date +%s > "$RUNNER_TEMP/nddev-ci-started"
+      - name: Outside telemetry off
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/telemetry@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+      - name: Select the artifact source
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/artifact-registry@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+      - name: Prepare the existing bootstrap interpreter
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-sdk@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          python-version: '3.13.18'
+      - name: Restore dependency caches
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-cache@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          managed: 'false'
+      - name: Devin project artifacts
+        run: |
+          python3 devin-setup/scripts/check_devin_setup.py --source
+      - name: Resolve the existing test tools
+        id: pin
+        run: |
+          python3 - <<'PYTOOLS'
+          import json, os, re
+          from pathlib import Path
+          pin = json.loads(Path('build/stack-pin.json').read_text())
+          selected = {'uv': pin['runtimes']['uv']['version'], 'just': pin['quality']['just']['version']}
+          if not all(re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', version) for version in selected.values()):
+              raise SystemExit('Expected exact existing test-tool versions')
+          with Path(os.environ['GITHUB_OUTPUT']).open('a') as output:
+              output.write(''.join(name + '=' + version + '\n' for name, version in selected.items()))
+          PYTOOLS
+      - name: Prepare the selected test tools
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-sdk@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          uv-version: ${{ steps.pin.outputs.uv }}
+          tools: just@${{ steps.pin.outputs.just }}
+      - name: Devin unit tests
+        run: just test devin-setup/tests/
+      - name: Devin shell syntax
+        run: |
+          cd devin-setup
+          for f in setup install/bootstrap.sh install/env.sh install/lib/*.sh install/modules/*/module.sh; do sh -n "$f"; done
+      - name: Record execution outcome
+        if: always()
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/job-record@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          task: devin-artifacts
+          status: ${{ job.status }}
+          started-file: ${{ runner.temp }}/nddev-ci-started
+
+  devin-e2e:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-26.04, macos-26]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Record execution start
+        shell: bash
+        run: date +%s > "$RUNNER_TEMP/nddev-ci-started"
+      - name: Outside telemetry off
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/telemetry@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+      - name: Select the artifact source
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/artifact-registry@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+      - name: Restore dependency caches
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-cache@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          managed: 'false'
+      - name: Full install
+        run: |
+          export PATH="$PWD/devin-setup/.local/bin:$HOME/.local/bin:$PATH"
+          cd devin-setup && ./setup
+      - name: Verify installed toolchain and plugin
+        run: |
+          export PATH="$PWD/devin-setup/.local/bin:$HOME/.local/bin:$PATH"
+          cd devin-setup
+          devin --version
+          herdr --version
+          # Account-backed plugin activation is deliberately not exercised on CI.
+          python3 scripts/check_devin_setup.py
+      - name: Record execution outcome
+        if: always()
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/job-record@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          task: devin-e2e-${{ matrix.os }}
+          status: ${{ job.status }}
+          started-file: ${{ runner.temp }}/nddev-ci-started
+
+  devin-e2e-windows:
+    runs-on: windows-2025
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Record execution start
+        shell: bash
+        run: date +%s > "$RUNNER_TEMP/nddev-ci-started"
+      - name: Outside telemetry off
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/telemetry@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+      - name: Select the artifact source
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/artifact-registry@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+      - name: Restore dependency caches
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-cache@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          managed: 'false'
+      - name: Full install
+        shell: pwsh
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File .\devin-setup\setup.ps1
+      - name: Verify installed toolchain and plugin
+        shell: pwsh
+        run: |
+          . .\devin-setup\install\env.ps1
+          cd devin-setup
+          devin --version
+          herdr --version
+          # Account-backed plugin activation is deliberately not exercised on CI.
+          python scripts/check_devin_setup.py
+      - name: Unit tests on native Windows
+        shell: pwsh
+        run: |
+          . .\devin-setup\install\env.ps1
+          cd devin-setup
+          python ..\scripts\run_tests.py tests/
+      - name: Record execution outcome
+        if: always()
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/job-record@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          task: devin-e2e-windows
+          status: ${{ job.status }}
+          started-file: ${{ runner.temp }}/nddev-ci-started
+
+  setup-e2e:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-26.04, macos-26]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Record execution start
+        shell: bash
+        run: date +%s > "$RUNNER_TEMP/nddev-ci-started"
+      - name: Outside telemetry off
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/telemetry@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+      - name: Select the artifact source
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/artifact-registry@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+      - name: Restore dependency caches
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-cache@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          managed: 'false'
+      - name: Full install
+        run: |
+          export PATH="$PWD/.local/bin:$HOME/.local/bin:$PATH"
+          ./setup
+      - name: Verify installed toolchain and plugins
+        run: |
+          export PATH="$PWD/.local/bin:$HOME/.local/bin:$PATH"
+          codex --version
+          codex plugin list
+          python3 scripts/check_codex_setup.py
+          python3 scripts/check_stack.py
+      - name: Record execution outcome
+        if: always()
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/job-record@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          task: setup-e2e-${{ matrix.os }}
+          status: ${{ job.status }}
+          started-file: ${{ runner.temp }}/nddev-ci-started
+
+
+  # Windows is native (ADR 0012): prove setup.ps1 on a real Windows host.
+  # WSL2 Ubuntu remains an alternative POSIX path covered by the Linux runner.
+
+  setup-e2e-windows:
+    runs-on: windows-2025
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Record execution start
+        shell: bash
+        run: date +%s > "$RUNNER_TEMP/nddev-ci-started"
+      - name: Outside telemetry off
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/telemetry@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+      - name: Select the artifact source
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/artifact-registry@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+      - name: Restore dependency caches
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-cache@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          managed: 'false'
+      - name: Full install
+        shell: pwsh
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1
+      - name: Verify installed toolchain and plugins
+        shell: pwsh
+        run: |
+          . .\install\env.ps1
+          codex --version
+          codex plugin list
+          python scripts/check_codex_setup.py
+          python scripts/check_stack.py
+      - name: Unit tests on native Windows
+        shell: pwsh
+        run: |
+          . .\install\env.ps1
+          python scripts/run_tests.py tests/
+      - name: Record execution outcome
+        if: always()
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/job-record@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          task: setup-e2e-windows
+          status: ${{ job.status }}
+          started-file: ${{ runner.temp }}/nddev-ci-started
+
+
+  # Issue #7: prove repeatable, non-destructive provisioning for real on a
+  # free OSS runner — self-SSH to root@localhost, provision twice (env file
+  # preserved, idempotent), a dirty checkout must refuse, then the systemd
+  # timer itself drives a real ff-only deploy tick.
+
+  deploy-e2e:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Record execution start
+        shell: bash
+        run: date +%s > "$RUNNER_TEMP/nddev-ci-started"
+      - name: Outside telemetry off
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/telemetry@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+      - name: Select the artifact source
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/artifact-registry@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+      - name: Restore dependency caches
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-cache@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          managed: 'false'
+      - name: Start sshd with root key access
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openssh-server
+          mkdir -p "$HOME/.ssh" && chmod 700 "$HOME/.ssh"
+          ssh-keygen -t ed25519 -N '' -f "$HOME/.ssh/id_ed25519" -q
+          sudo mkdir -p /root/.ssh && sudo chmod 700 /root/.ssh
+          sudo cp "$HOME/.ssh/id_ed25519.pub" /root/.ssh/authorized_keys
+          sudo chmod 600 /root/.ssh/authorized_keys
+          echo 'PermitRootLogin prohibit-password' | sudo tee /etc/ssh/sshd_config.d/99-root-key.conf
+          sudo mkdir -p /run/sshd
+          sudo systemctl restart ssh
+          ssh-keyscan -H localhost 127.0.0.1 >> "$HOME/.ssh/known_hosts" 2>/dev/null
+          ssh -o BatchMode=yes root@localhost true
+      - name: Create upstream repo
+        run: |
+          git init --bare -b dev /tmp/upstream.git
+          work=$(mktemp -d)
+          git -C "$work" init -q -b dev
+          echo app > "$work/README.md"
+          git -C "$work" add README.md
+          git -C "$work" -c user.email=ci@local -c user.name=ci commit -qm init
+          git -C "$work" push -q /tmp/upstream.git dev
+      - name: Provision run 1 — clone, watcher units, env file, timer
+        run: |
+          ./install/deploy/provision-server.sh root@localhost dev /tmp/upstream.git /opt/hack-app
+          sudo test -f /etc/default/hack-deploy
+          sudo test -d /opt/hack-app/.git
+          sudo systemctl is-active --quiet deploy-watch.timer
+      - name: Provision run 2 — idempotent, existing env preserved
+        run: |
+          printf '#!/bin/sh\ndate -u +%%s >> /tmp/hack-deploy-ran\n' | sudo tee /tmp/deploy-stub.sh
+          sudo chmod +x /tmp/deploy-stub.sh
+          echo 'HACK_DEPLOY_CMD=/tmp/deploy-stub.sh' | sudo tee -a /etc/default/hack-deploy
+          ./install/deploy/provision-server.sh root@localhost dev /tmp/upstream.git /opt/hack-app
+          sudo grep -q 'HACK_DEPLOY_CMD' /etc/default/hack-deploy
+      - name: Dirty checkout refuses provisioning
+        run: |
+          # A modified TRACKED file must stop the run (issue #7); untracked
+          # state like .env/.deployed-sha is legitimate and tolerated.
+          sudo sh -c 'echo tampered >> /opt/hack-app/README.md'
+          if ./install/deploy/provision-server.sh root@localhost dev /tmp/upstream.git /opt/hack-app; then
+            echo 'dirty checkout must fail provisioning'; exit 1
+          fi
+          sudo git -C /opt/hack-app checkout -- README.md
+      - name: Systemd timer drives a real deploy tick
+        run: |
+          work=$(mktemp -d)
+          git -C "$work" init -q
+          git -C "$work" fetch -q /tmp/upstream.git dev
+          git -C "$work" checkout -q FETCH_HEAD
+          git -C "$work" -c user.email=ci@local -c user.name=ci commit -qm second --allow-empty
+          git -C "$work" push -q /tmp/upstream.git HEAD:dev
+          sudo touch /opt/hack-app/.env
+          want=$(git -C "$work" rev-parse HEAD)
+          for _ in $(seq 1 24); do
+            sudo test -f /opt/hack-app/.deployed-sha && break
+            sleep 5
+          done
+          got=$(sudo cat /opt/hack-app/.deployed-sha 2>/dev/null || echo none)
+          [ "$got" = "$want" ] || { echo "deployed-sha $got != remote $want"; sudo journalctl -u deploy-watch.service --no-pager | tail -20; exit 1; }
+          sudo grep -q . /tmp/hack-deploy-ran
+      - name: Record execution outcome
+        if: always()
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/job-record@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          task: deploy-e2e
+          status: ${{ job.status }}
+          started-file: ${{ runner.temp }}/nddev-ci-started
+
+  workflows:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Record execution start
+        shell: bash
+        run: date +%s > "$RUNNER_TEMP/nddev-ci-started"
+      - name: Outside telemetry off
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/telemetry@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+      - name: Select the artifact source
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/artifact-registry@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+      - uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-sdk@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          tools: zizmor@1.32.0
+      - name: Install actionlint 1.7.12 and gitleaks 8.30.1, checked against their digests
+        run: |
+          set -euo pipefail
+          bin="$HOME/.local/bin"; mkdir -p "$bin"
+          curl -fsSL -o "$RUNNER_TEMP/actionlint.tgz" "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz"
+          echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  $RUNNER_TEMP/actionlint.tgz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/actionlint.tgz" -C "$bin" "actionlint"
+          curl -fsSL -o "$RUNNER_TEMP/gitleaks.tgz" "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz"
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  $RUNNER_TEMP/gitleaks.tgz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$bin" "gitleaks"
+          echo "$bin" >> "$GITHUB_PATH"
+      - name: Restore dependency caches
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-cache@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          managed: 'false'
+      - name: Lint and audit workflows
+        run: |
+          actionlint
+          zizmor --offline --no-progress .github
+      - name: Scan new pull request commits, or the full history on main
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ -n "$BASE" ]; then
+            gitleaks git --no-banner --redact --log-opts="$BASE..$HEAD" .
+          else
+            gitleaks git --no-banner --redact .
+          fi
+      - name: Record execution outcome
+        if: always()
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/job-record@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+        with:
+          task: workflows
+          status: ${{ job.status }}
+          started-file: ${{ runner.temp }}/nddev-ci-started
+
+  gate:
+    needs: [artifacts, devin-artifacts, devin-e2e, devin-e2e-windows, setup-e2e, setup-e2e-windows, deploy-e2e, workflows, merge-stops]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - name: Every required job ended as expected
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+          EXPECTED: >-
+            {"artifacts":"success","devin-artifacts":"success","devin-e2e":"success","setup-e2e":"success",
+            "deploy-e2e":"success","workflows":"success","merge-stops":"${{ github.event_name == 'pull_request' && 'success' || 'skipped' }}","devin-e2e-windows":"success","setup-e2e-windows":"success"}
+        run: jq -e --argjson want "$EXPECTED" 'map_values(.result) == $want' <<< "$NEEDS"
+
+  merge-stops:
+    if: github.event_name == 'pull_request'
+    uses: NDDev-Technocracy-OpenNetwork/nddev-ci/.github/workflows/merge-stops.yml@9fead1382c452a6b791a0a9e464ac6ac66537ac3 # v0.6.51
+    permissions:
+      contents: read

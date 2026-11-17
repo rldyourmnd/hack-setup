@@ -7,7 +7,7 @@ workflow, and the standards. Everything below is either law (from
 `build/`) or a pointer to where the law lives.
 
 This repository carries toolchain and instructions. Product code lives
-in the product repo (`NDDev-OpenNetwork/vibestrap` skeleton, later the
+in the product repo (`NDDev-Archive/vibestrap` skeleton, later the
 hackathon repo `BAITC-Hacks/hack-a58598e0-saint-tibo` — its first push
 happens on hackathon day, on the owner's word).
 
@@ -45,7 +45,7 @@ suggestion.
   rebase merges, never rewrite or delete shared history (hooks deny
   them; repo merge buttons are disabled).
 - By standard, push early and let **CI/CD run in the background** —
-  `.github/workflows/check.yml` verifies every push on all three OSes
+  `.github/workflows/ci.yml` verifies every push on all three OSes
   and the deploy watcher ships `dev`/`main` moves on the servers; check
   `gh run list` after pushing, fix red immediately, keep shipping
   meanwhile — do not idle waiting on green.
@@ -105,9 +105,9 @@ Playbooks: `$hack-agent-workflow:delegate-worker`,
 
 ## Pin
 
-- Codex CLI `0.155.1` (`rust-v0.155.1`, commit
-  `be2951ea34f0d295ed0becf97079f92fa5f6950e`). `codex --version` prints
-  `codex-cli 0.155.1`. Installer hashes live in `build/codex-pin.json`.
+- Codex CLI `0.157.1` (`rust-v0.157.1`, commit
+  `ac0e23e5232692b95268583c8278c50b8c436d2b`). `codex --version` prints
+  `codex-cli 0.157.1`. Installer hashes live in `build/codex-pin.json`.
 - Stack versions: `build/stack-pin.json` schema 2. Re-verify on
   hackathon day with `just reverify`. `docs/research/` is archive, not
   law.
@@ -181,7 +181,7 @@ keenable (HTTP, keyless by default; keys travel as env-var names only).
 - `UserPromptSubmit` adds the reminder + `STATUS` line (repo, branch,
   dirty count, last commit, `@me` issues via a 60 s gh cache).
 - `PreToolUse` `Bash|exec_command|write_stdin|shell` is the lane guard
-  described above — 0.155.1 names the exec tool `exec_command` and sends
+  described above — 0.157.1 names the exec tool `exec_command` and sends
   `tool_input.cmd`; `write_stdin` is covered so a typed `git push` into a
   persistent shell is denied too. `command` argv-list shapes are also
   handled.
@@ -213,12 +213,12 @@ issues/branch/worktree/lane/`hack:` markers across compaction;
 `check_for_update_on_startup = false` (the CLI is pinned). `notify` is
 host-owned: module 20 writes a managed block into
 `~/.codex/config.toml` → `install/notify.sh` / `notify.ps1` toast on
-turn complete. Custom slash commands do not exist in 0.155.1;
-`/worktree`, `/fork`, `/app` cover the manual paths.
+turn complete. Built-in slash commands cover the manual paths:
+`/worktree`, `/fork`, `/app`.
 
 ## Technology rules
 
-Codex 0.155.1 has no glob / `.mdc` / `alwaysApply` loader. The
+Codex 0.157.1 has no glob / `.mdc` / `alwaysApply` loader. The
 catalogue stays out of this file by design.
 
 1. Read `plugins/hack-agent-standards/standards/INDEX.md`.
@@ -252,7 +252,7 @@ change that creates the tree.
 | Notify | `install/notify.sh` / `notify.ps1` | Turn-complete toast, wired into user config by module 20. |
 | Project config | `.codex/config.toml` | Projection of the pin; loads after trust. |
 | Bootstrap | `./setup` / `.\setup.ps1` → `install/` | macOS/Linux + native Windows modules. Discovery: `install/modules/<nn>-*`. |
-| Codex pin | `build/codex-pin.json` | CLI `0.155.1` + official installer hashes. |
+| Codex pin | `build/codex-pin.json` | CLI `0.157.1` + official installer hashes. |
 | Stack pin | `build/stack-pin.json` | Schema 2. Generated table: `build/stack-standard.md`. |
 | Commands | `justfile` | `just gate` / `just check` / `just repair`. |
 | Devin twin | `devin-setup/` | Self-contained Devin CLI setup (devin `3000.11.1` + herdr `0.9.1`, herdr-pane orchestration). Its own `AGENTS.md` rules inside. |
@@ -313,7 +313,7 @@ the toolchain refuses outright:
 ## Bootstrap
 
 ```bash
-git clone git@github.com:NDDev-OpenNetwork/hack-setup.git
+git clone git@github.com:NDDev-Archive/hack-setup.git
 cd hack-setup
 ./setup --member <danil|ivan|artem>          # macOS / Ubuntu / WSL2
 .\setup.ps1 --member <danil|ivan|artem>     # native Windows x86_64
@@ -351,7 +351,7 @@ codex --version
 ```
 
 All four must succeed before the setup is treated as ready. `just gate`
-runs the same four. `just check` is only the two Python scripts.
+runs the same four. `just check` validates authored files and command formatting without inspecting an installed host. The scripts' `--source` mode preserves those checks; `just gate` keeps the full installed-host checks.
 `just live` (`scripts/verify_serena.py`) is the real Serena MCP proof —
 stdio handshake, activation, `find_symbol` through pinned `ty`, memory
 write/read/delete; slower and needs network, so it is not in `gate`.

@@ -1,4 +1,5 @@
 set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
+set positional-arguments
 
 # List recipes
 default:
@@ -7,11 +8,11 @@ default:
 # Install numbered modules (args pass through: just setup --member ivan)
 [unix]
 setup *args:
-    ./setup {{args}}
+    ./setup {{ args }}
 
 [windows]
 setup *args:
-    powershell -NoProfile -ExecutionPolicy Bypass -File ./setup.ps1 {{args}}
+    powershell -NoProfile -ExecutionPolicy Bypass -File ./setup.ps1 {{ args }}
 
 # Planned work, no downloads
 [unix]
@@ -34,15 +35,29 @@ status:
 # Proof: pin == config == AGENTS == generated standard
 [unix]
 check:
-    python3 scripts/check_codex_setup.py
-    python3 scripts/check_stack.py
+    just --fmt --check
+    python3 scripts/check_codex_setup.py --source
+    python3 scripts/check_stack.py --source
 
 [windows]
 check:
+    just --fmt --check
+    python scripts/check_codex_setup.py --source
+    python scripts/check_stack.py --source
+
+# Validate the installed product surfaces and selected host tools without applying changes.
+[unix]
+check-installed:
+    python3 scripts/check_codex_setup.py
+    python3 scripts/check_stack.py
+
+# Validate the installed product surfaces and selected host tools without applying changes.
+[windows]
+check-installed:
     python scripts/check_codex_setup.py
     python scripts/check_stack.py
 
-alias doctor := check
+alias doctor := check-installed
 
 # Diagnose the setup, auto-fix safe drift (plugin cache, notify, state files)
 [unix]
@@ -57,15 +72,13 @@ repair:
 [unix]
 gate:
     ./setup --status
-    python3 scripts/check_codex_setup.py
-    python3 scripts/check_stack.py
+    just check-installed
     codex --version
 
 [windows]
 gate:
     powershell -NoProfile -ExecutionPolicy Bypass -File ./setup.ps1 --status
-    python scripts/check_codex_setup.py
-    python scripts/check_stack.py
+    just check-installed
     codex --version
 
 # Print generated stack standard
@@ -81,6 +94,15 @@ reverify:
 live:
     python3 scripts/verify_serena.py
 
-# Repo tests
-test:
-    pytest -q
+# Run repository tests using the existing authoritative pytest pin.
+[unix]
+test *args:
+    python3 scripts/run_tests.py "$@"
+
+# Run repository tests using the existing authoritative pytest pin.
+[windows]
+test *args:
+    python scripts/run_tests.py "$@"
+
+# Verify source, behavior and installed readiness on a prepared executor.
+verify: check test gate

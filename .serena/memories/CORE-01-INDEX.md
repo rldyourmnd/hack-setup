@@ -9,7 +9,7 @@ Area: CORE
 
 ## Purpose
 
-Index durable knowledge for the Codex 0.155.1 team setup repository. No application code.
+Index durable knowledge for the Codex 0.157.1 team setup repository. No application code.
 
 ## Source Of Truth
 
@@ -42,7 +42,7 @@ Index durable knowledge for the Codex 0.155.1 team setup repository. No applicat
 
 ## Current Behavior
 
-Author remote is `NDDev-OpenNetwork/hack-setup`. Later working remote is `BAITC-Hacks/hack-a58598e0-saint-tibo` and is not pushed unless the owner asks. `./setup --member <name>` installs member identity + Codex + Node/bun/uv/Python/`just` + all five plugins (module 15 derives git identity from the authenticated `gh` login — wrong login fails the install). `devin-setup/` is the self-contained Devin CLI twin (own entries, checker, CI jobs). Web typescript is only `7.0.2`. Codex session models are `gpt-6-astra` / `gpt-6-sol` at `xhigh`, window `872000` / compact `700000`. Codex subagents are off. Setup owner stream is Danil. This public repo may land setup commits on `main` when Danil asked. The catalogue and layer skills exist. Product trees do not. All GitHub issues are closed as of 2026-09-21.
+Author remote is `NDDev-Technocracy-OpenNetwork/hack-setup`. Later working remote is `BAITC-Hacks/hack-a58598e0-saint-tibo` and is not pushed unless the owner asks. `./setup --member <name>` installs member identity + Codex + Node/bun/uv/Python/`just` + all five plugins (module 15 derives git identity from the authenticated `gh` login — wrong login fails the install). `devin-setup/` is the self-contained Devin CLI twin (own entries, checker, CI jobs). Web typescript is only `7.0.2`. Codex session models are `gpt-6-astra` / `gpt-6-sol` at `xhigh`, window `872000` / compact `700000`. Codex subagents are off. Setup owner stream is Danil. This public repo may land setup commits on `main` when Danil asked. The catalogue and layer skills exist. Product trees do not. All GitHub issues are closed as of 2026-09-21.
 
 ## Open Items (durable)
 
@@ -68,7 +68,7 @@ Author remote is `NDDev-OpenNetwork/hack-setup`. Later working remote is `BAITC-
 
 ## Invariants
 
-- Codex CLI pin is `0.155.1` / `rust-v0.155.1`.
+- Codex CLI pin is `0.157.1` / `rust-v0.157.1`.
 - Root entry is `./setup`, not a file named `install`.
 - Project commands are `just`. Do not add a Makefile.
 - Repo skill names do not collide with either plugin skill set.

@@ -1,6 +1,17 @@
+<!-- nddev-public-hackathon -->
 # hack-setup
 
-Shared Codex `0.155.1` setup for a three-person team that will later work in
+Shared agent setup and reproducible development tooling for hackathon teams. Codex project surfaces and pinned toolchain.
+
+[NDDev OpenNetwork](https://github.com/NDDev-Technocracy-OpenNetwork) · [Repository](https://github.com/rldyourmnd/hack-setup)
+
+This repository is a hackathon prototype or supporting tool. Follow the project-specific setup below; cloud integrations require your own configuration and credentials.
+
+---
+
+## hack-setup
+
+Shared Codex `0.157.1` setup for a three-person team that will later work in
 one private repo: `BAITC-Hacks/hack-a58598e0-saint-tibo`.
 
 This public staging repo holds the project surfaces, the installer catalog,
@@ -15,7 +26,7 @@ Windows x86_64 **natively** (ADR 0012; WSL2 also works as a POSIX path).
 macOS / Linux / WSL:
 
 ```bash
-git clone git@github.com:NDDev-OpenNetwork/hack-setup.git
+git clone git@github.com:NDDev-Archive/hack-setup.git
 cd hack-setup
 ./setup --member <danil|ivan|artem>
 . install/env.sh
@@ -24,7 +35,7 @@ cd hack-setup
 Windows (PowerShell):
 
 ```powershell
-git clone https://github.com/NDDev-OpenNetwork/hack-setup.git
+git clone https://github.com/rldyourmnd/hack-setup.git
 cd hack-setup
 powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1 --member <danil|ivan|artem>
 . .\install\env.ps1
@@ -66,7 +77,7 @@ shims; Windows additionally exposes `%LOCALAPPDATA%\Programs\OpenAI\Codex\bin`.
 
 | File | Role |
 | --- | --- |
-| `build/codex-pin.json` | Codex CLI `0.155.1` + official installer hashes |
+| `build/codex-pin.json` | Codex CLI `0.157.1` + official installer hashes |
 | `build/stack-pin.json` | Product stack schema 2. `control` names the loop |
 | `.codex/config.toml` | Runtime projection of session + models + features |
 | `build/stack-standard.md` | Generated; refresh with `--write` |
@@ -76,7 +87,7 @@ shims; Windows additionally exposes `%LOCALAPPDATA%\Programs\OpenAI\Codex\bin`.
 | `plugins/hack-agent-standards/standards/` | On-demand frames. `docs/research/` is archive |
 
 ```bash
-codex --version     # expected: codex-cli 0.155.1
+codex --version     # expected: codex-cli 0.157.1
 just check          # artifact validator + host doctor
 just live           # real Serena MCP proof (handshake/symbol/memory)
 just repair         # diagnose + auto-fix safe drift (plugin cache, user config)
@@ -128,3 +139,18 @@ hooks, installs the `hack-devin-workflow` plugin locally, and replaces
 codex_app thread orchestration with herdr panes (`herdr agent
 start/prompt/read/wait`). Docs and proof: `devin-setup/README.md`,
 `devin-setup/AGENTS.md`, `cd devin-setup && just gate`.
+
+## Source CI and installed readiness
+
+`just check` checks authored projections and formatting without consulting an
+installed account or toolchain. The checker scripts accept `--source`; the
+normal scripts and `just gate` retain installed-host readiness. Python syntax
+checks compile in memory and leave no bytecode behind. The Devin artifact job
+checks its generated pin copy instead of silently rewriting it.
+
+CI prepares its execution environment through the same pinned shared library.
+The immutable application/runtime pins remain authoritative for installation
+subjects. Devin account-backed plugin activation and listing are not exercised
+on CI. Native CLI installation, local artifacts, unit tests and the isolated
+local deployment fixture remain required. No CI result establishes a signed-in
+account, live model request, external host rollout or running worker session.

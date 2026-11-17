@@ -27,8 +27,8 @@ def test_extract_version_common_tools() -> None:
         == "0.12.17"
     )
     assert (
-        check_stack.extract_version("codex-cli 0.155.1\n", r"codex-cli\s+([0-9]+(?:\.[0-9]+)*)")
-        == "0.155.1"
+        check_stack.extract_version("codex-cli 0.157.1\n", r"codex-cli\s+([0-9]+(?:\.[0-9]+)*)")
+        == "0.157.1"
     )
     assert check_stack.extract_version("nope", r"v?([0-9]+(?:\.[0-9]+)*)") is None
 

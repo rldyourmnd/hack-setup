@@ -13,9 +13,9 @@ Record the Codex CLI pin for this repository.
 
 ## Source Of Truth
 
-- `build/codex-pin.json`: `codex_cli=0.155.1`, `release_tag=rust-v0.155.1`, official `install.sh` URL/sha256, per-platform package hashes.
+- `build/codex-pin.json`: `codex_cli=0.157.1`, `release_tag=rust-v0.157.1`, official `install.sh` URL/sha256, per-platform package hashes.
 - `docs/adr/0001-codex-cli-155-pin.md`.
-- `AGENTS.md` records release commit `be2951ea34f0d295ed0becf97079f92fa5f6950e`.
+- `AGENTS.md` records release commit `ac0e23e5232692b95268583c8278c50b8c436d2b`.
 
 ## Current Behavior
 
@@ -24,13 +24,13 @@ Record the Codex CLI pin for this repository.
 ## Contracts And Data
 
 - Reject `0.156.0-alpha.*` and discontinued `codex-app` / `Codex.app`.
-- Official installer: `https://github.com/openai/codex/releases/download/rust-v0.155.1/install.sh`.
+- Official installer: `https://github.com/openai/codex/releases/download/rust-v0.157.1/install.sh`.
 - Installer env: `CODEX_RELEASE`, `CODEX_NON_INTERACTIVE`, `CODEX_INSTALL_DIR`, `CODEX_INSTALLER_USE_RELEASES_OPENAI_COM`.
 - Plugin schema: `https://agent-plugins.org/schemas/1.0.0/plugin.schema.json`.
 
 ## Invariants
 
-- `codex --version` must print `codex-cli 0.155.1` before setup work is treated as verified.
+- `codex --version` must print `codex-cli 0.157.1` before setup work is treated as verified.
 - Do not use the unpinned `chatgpt.com/codex/install.sh` as the catalog installer.
 
 ## Verification

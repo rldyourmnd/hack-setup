@@ -37,7 +37,7 @@ suggestion.
   rebase merges, never rewrite or delete shared history (hooks deny
   them; repo merge buttons are disabled).
 - By standard, push early and let **CI/CD run in the background** —
-  `.github/workflows/check.yml` verifies every push on all three OSes
+  `.github/workflows/ci.yml` verifies every push on all three OSes
   and the deploy watcher ships `dev`/`main` moves on the servers; check
   `gh run list` after pushing, fix red immediately, keep shipping
   meanwhile — do not idle waiting on green.
@@ -92,3 +92,8 @@ Same loop as the root setup; do not fork numbers outside the pin.
 
 Same as root `AGENTS.md`: one claimed file owner, no secrets in the
 public repo, never claim a check you did not run.
+
+Source CI uses the checker's `--source` mode to validate the authored projections
+without executing hook fixtures. Installed readiness keeps the default checker.
+On CI, account-backed plugin activation/listing is deliberately not performed;
+CLI installation and the offline artifact/native fixture checks remain required.

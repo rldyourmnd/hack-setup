@@ -1,7 +1,7 @@
 <!-- Memory Metadata
 Last updated: 2026-09-21
 Last commit: 63ddace docs(serena): record deploy-e2e verification and full issue closure
-Scope: plugins/hack-agent-workflow/skills/{delegate-worker,github-flow}, install/deploy/, .codex/hooks/, docs/adr/0014-*, build/stack-pin.json registered.{deploy,hooks}, NDDev-OpenNetwork/vibestrap
+Scope: plugins/hack-agent-workflow/skills/{delegate-worker,github-flow}, install/deploy/, .codex/hooks/, docs/adr/0014-*, build/stack-pin.json registered.{deploy,hooks}, NDDev-Archive/vibestrap
 Area: CODEX
 -->
 
@@ -10,7 +10,7 @@ Area: CODEX
 Orchestrator/worker flow and deployment model (ADR 0014).
 
 - Threads: `codex_app.*` (app) / `codex_tui.*` (TUI) dynamic namespace.
-  Verified pin surface `be2951ea`: list_threads, list_archived_threads,
+  Verified pin surface `ac0e23e5`: list_threads, list_archived_threads,
   read_thread, wait_threads (≤8, ≤120 s, 0=snapshot),
   send_message_to_thread, create_thread, fork_thread, set_thread_title,
   set_thread_archived. NO handoff_thread / set_thread_pinned.
@@ -76,12 +76,12 @@ Orchestrator/worker flow and deployment model (ADR 0014).
   LIVE-VERIFIED by `deploy-e2e` CI job (ubuntu-latest, self-SSH
   root@localhost): provision twice → env preserved → tracked-dirty
   refuses → timer fires a real deploy tick (.deployed-sha == remote).
-- Product skeleton: `NDDev-OpenNetwork/vibestrap` (private mirror of
+- Product skeleton: `NDDev-Archive/vibestrap` (private mirror of
   R3flector/vibestrap, no upstream license). Agent surface projected:
   `.codex/{config.toml,hooks.json,hooks/hack_mode.py,lanes.json}` +
   `build/stack-pin.json` (thin pin + fork exceptions: RHF over TanStack
   Form, TanStack Start, better-auth/drizzle=auth only) +
-  `.serena/project.yml`. Local clone `~/Developer/NDDev-OpenNetwork/vibestrap`.
+  `.serena/project.yml`. Local clone `~/Developer/NDDev-Archive/vibestrap`.
 - hack_mode.py is repo-portable: state/cache files per ROOT.name + path
   hash; SKILL.md falls back to
   `~/.codex/plugins/cache/*/hack-agent-workflow/`. Hack-mode ruleset
