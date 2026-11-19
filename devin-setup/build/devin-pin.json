@@ -4,10 +4,10 @@
   "verified_on": "2026-09-22",
 
   "devin_cli": {
-    "version": "3000.11.1",
-    "version_output_prefix": "devin 3000.11.1",
-    "install_sh": "https://static.devin.ai/cli/3000.11.1/setup.sh",
-    "install_ps1": "https://static.devin.ai/cli/3000.11.1/setup.ps1",
+    "version": "3000.14.30821",
+    "version_output_prefix": "devin 3000.14.30821",
+    "install_sh": "https://static.devin.ai/cli/3000.14.30821/setup.sh",
+    "install_ps1": "https://static.devin.ai/cli/3000.14.30821/setup.ps1",
     "install_layout": "installs to ~/.local/share/devin/cli/_versions/<ver> with a 'current' symlink and a ~/.local/bin/devin shim",
     "notes": "Versioned setup scripts are published per release (static.devin.ai/cli/<ver>/setup.{sh,ps1}). `devin update` would drift the pin — auto_update is pinned off in the managed user config."
   },
