@@ -255,7 +255,7 @@ change that creates the tree.
 | Codex pin | `build/codex-pin.json` | CLI `0.157.1` + official installer hashes. |
 | Stack pin | `build/stack-pin.json` | Schema 2. Generated table: `build/stack-standard.md`. |
 | Commands | `justfile` | `just gate` / `just check` / `just repair`. |
-| Devin twin | `devin-setup/` | Self-contained Devin CLI setup (devin `3000.11.1` + herdr `0.9.1`, herdr-pane orchestration). Its own `AGENTS.md` rules inside. |
+| Devin twin | `devin-setup/` | Self-contained Devin CLI setup (devin `3000.14.30821` + herdr `0.9.1`, herdr-pane orchestration). Its own `AGENTS.md` rules inside. |
 | Devin forwarder | `.devin/hooks/devin_mode.py` | Devin sets `DEVIN_PROJECT_DIR` to this root for sessions in `devin-setup/`; forwards to the twin's hook. |
 
 Installed plugins are a copy under `~/.codex/plugins/cache/`, not a
