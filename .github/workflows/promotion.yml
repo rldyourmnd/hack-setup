@@ -1,0 +1,26 @@
+name: promotion
+
+on:
+  workflow_run: # zizmor: ignore[dangerous-triggers] qualifies a same-repository dev push without running its code
+    workflows: [ci]
+    types: [completed]
+    branches: [dev]
+  workflow_dispatch: {}
+
+permissions: {}
+
+jobs:
+  promote:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'dev' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    uses: NDDev-Technocracy-OpenNetwork/nddev-ci/.github/workflows/promote.yml@03d53ec146797bc27d7b8b37abbf766ab82041b6 # v0.6.81
+    with:
+      check-workflow: ci.yml
+    secrets: inherit # zizmor: ignore[secrets-inherit] the dev-only promotion environment supplies the key
+    permissions:
+      actions: write
+      contents: read
