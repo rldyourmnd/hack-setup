@@ -32,7 +32,7 @@ jobs:
       - name: Prepare the existing bootstrap interpreter
         uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-sdk@b21b5e0745bf21caaaa71a64560a7135b92a903f # v0.6.82
         with:
-          python-version: '3.13.18'
+          python-version: '3.15.2'
       - name: Restore dependency caches
         uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-cache@b21b5e0745bf21caaaa71a64560a7135b92a903f # v0.6.82
         with:
@@ -87,7 +87,7 @@ jobs:
       - name: Prepare the existing bootstrap interpreter
         uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-sdk@b21b5e0745bf21caaaa71a64560a7135b92a903f # v0.6.82
         with:
-          python-version: '3.13.18'
+          python-version: '3.15.2'
       - name: Restore dependency caches
         uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-cache@b21b5e0745bf21caaaa71a64560a7135b92a903f # v0.6.82
         with:
